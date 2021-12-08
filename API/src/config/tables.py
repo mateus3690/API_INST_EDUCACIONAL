@@ -21,6 +21,7 @@ class Cursos(Base):
      nome = Column(String(80), unique=True)
      tempo_duracao = Column(Integer)
      descricao = Column(String(100))
+     mensalidade = Column(NUMERIC(5,2))
 
      def __repr__(self):
          return f'<Curso {self.nome}>'
@@ -71,8 +72,7 @@ class Professores(Base):
      endereco =  Column(String(80))
      salario = Column(NUMERIC(5,2))
      materia = Column(String(50))    
-     id_curso = Column(Integer, ForeignKey('tb_cursos.id'))
-     curso = Column(String(80))
+    
      #tb_cursos = relationship('Cursos')
 
      def __repr__(self):
@@ -98,6 +98,27 @@ class Usuario(Base):
 
      def __repr__(self):
          return f'<Usuario {self.usuario}>'
+     
+     def save(self):
+          db_session.add(self)
+          db_session.commit()
+     
+     def delete(self):
+          db_session.delete(self)
+          db_session.commit()
+
+class Login(Base):
+
+     __tablename__ = 'tb_login'
+     id = Column(Integer, primary_key=True)
+     nome = Column(String(16))
+     nascimento = Column(String(10))
+     cpf = Column(String(11), index=True, unique=True)
+     email = Column(String(30), index=True, unique=True)
+     senha = Column(String(50))
+
+     def __repr__(self):
+         return f'<Login {self.nome}>'
      
      def save(self):
           db_session.add(self)

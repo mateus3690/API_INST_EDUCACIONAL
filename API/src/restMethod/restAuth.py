@@ -2,7 +2,7 @@ import repackage
 repackage.up()
 
 from config.tables import Usuario
-from config.auth import crypMD5, AuthSystem, AuthUser
+from config.auth import crypMD5, AuthSystem
 from flask_restful import Resource
 from flask import request
 import sqlalchemy
@@ -13,13 +13,10 @@ auth = HTTPBasicAuth()
 def verifySistem(login, password):
     return AuthSystem(login=login, password=password)
 
-auth2 = HTTPBasicAuth()
-@auth2.verify_password
-def verifyUser(login, password):
-    return AuthUser(login=login, password=password)
 
 class DirectAuth(Resource):
      
+     @auth.login_required
      def get(self, id):
 
           try:
@@ -42,7 +39,8 @@ class DirectAuth(Resource):
                }
 
           return response
-     
+
+     @auth.login_required
      def put(self, id):
 
           try:
@@ -122,7 +120,8 @@ class DirectAuthPass(Resource):
                 response = {"mensagem":"Nenhum registro no momento"}
           
           return response
-     
+
+    
      def post(self):
           
           try:
@@ -134,6 +133,7 @@ class DirectAuthPass(Resource):
                try:
                     if dados['tipo_usuario'] == "A" and existe.tipo_usuario != "A":
                          tipo_user = dados['tipo_usuario']
+
                except AttributeError:
                     tipo_user = dados['tipo_usuario']
 
@@ -168,7 +168,7 @@ class DirectAuthPass(Resource):
           except sqlalchemy.exc.IntegrityError:
                response = {
                     'status':'Error',
-                    'mensagem':'Curso já esta registado no sistema!'
+                    'mensagem':'Usuário já esta registado no sistema!'
                }
 
           return response

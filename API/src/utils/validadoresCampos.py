@@ -1,14 +1,18 @@
+from email_validator import validate_email, EmailNotValidError
+
 class ValidaCampo():
 
-     def __init__(self, cpf='', rg=''):
+     def __init__(self, cpf=None, rg=None, email=None):
          self.cpf = str(cpf).replace(' ', '')
          self.rg = str(rg).replace(' ', '')
+         self.email = str(email).replace(' ', '')
 
      def analisaCPF(self):
 
           try:
                if len(self.cpf) == 11:
-                    digito1, digito2  = 0
+                    digito1 = 0
+                    digito2  = 0
 
                     for numero in range(10): 
 
@@ -47,3 +51,13 @@ class ValidaCampo():
                return False
 
           return False
+
+     def analisaEmail(self):
+          
+          email = self.email
+          try:
+               verificaEmail = validate_email(email)
+               return verificaEmail.email == email
+
+          except EmailNotValidError:
+               return False

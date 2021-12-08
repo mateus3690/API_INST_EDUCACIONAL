@@ -1,9 +1,9 @@
 import repackage
 repackage.up()
 
-from utils.validadores import ValidaCampo
-from config.tables import Professores, Cursos
-from config.auth import AuthSystem, AuthUser
+from utils.validadoresCampos import ValidaCampo
+from config.tables import Professores
+from config.auth import AuthSystem
 from flask_restful import Resource
 from flask import request
 import sqlalchemy
@@ -14,17 +14,12 @@ auth = HTTPBasicAuth()
 def verifySistem(login, password):
     return AuthSystem(login=login, password=password)
 
-auth2 = HTTPBasicAuth()
-@auth2.verify_password
-def verifyUser(login, password):
-    return AuthUser(login=login, password=password)
-
 class DirectProfessores(Resource):
      
-     def get(self, id):
+     def get(self, cpf):
 
           try:
-               professor = Professores.query.filter_by(id=id).first()
+               professor = Professores.query.filter_by(cpf=str(cpf)).first()
                response = {
                          'id': 		  professor.id,	
                          'nome':          professor.nome,
@@ -33,9 +28,7 @@ class DirectProfessores(Resource):
                          'rg':            professor.rg,
                          'endereco':      professor.endereco,
                          'salario':       f"{professor.salario}",
-                         'materia':       professor.materia,
-                         'curso':         professor.curso,
-                         'id_curso':      professor.id_curso    
+                         'materia':       professor.materia
                     }
 
           except AttributeError:
@@ -47,10 +40,10 @@ class DirectProfessores(Resource):
 
           return response
      
-     def put(self, id):
+     def put(self, cpf):
 
           try: 
-               professor = Professores.query.filter_by(id=id).first()
+               professor = Professores.query.filter_by(cpf=str(cpf)).first()
                dados = request.json
                
                analis1 = ValidaCampo(cpf=dados['cpf'])
@@ -75,11 +68,6 @@ class DirectProfessores(Resource):
                     
                     if 'materia' in dados:
                          professor.materia = dados['materia']
-                    
-                    if 'curso' in dados:
-                         curso = Cursos.query.filter_by(nome=dados['curso']).first()
-                         professor.curso = curso.nome
-                         professor.id_curso = curso.id
 
                     response = {
                               "id": 		  professor.id,	
@@ -89,9 +77,7 @@ class DirectProfessores(Resource):
                               "rg":            professor.rg,
                               "endereco":      professor.endereco,
                               "salario":       f"{professor.salario}",
-                              "materia":       professor.materia,
-                              "curso":         professor.curso,
-                              "id_curso":      professor.id_curso        
+                              "materia":       professor.materia      
                          }
                    
                     professor.save()
@@ -114,13 +100,19 @@ class DirectProfessores(Resource):
                     'status':'Error',
                     'mensagem':"Null"
                }
+          
+          except sqlalchemy.exc.IntegrityError:
+               response = {
+                    'status':'Error',
+                    'mensagem':'professor já esta registado no sistema!'
+               }
 
           return response
 
-     def delete(self, id):
+     def delete(self, cpf):
           
           try:
-               professor = Professores.query.filter_by(id=id).first()
+               professor = Professores.query.filter_by(cpf=str(cpf)).first()
                nome = professor.nome
                professor.delete()
                response = {
@@ -140,6 +132,7 @@ class DirectProfessores(Resource):
 
 class DirectProfessoresPass(Resource):
 
+     @auth.login_required
      def get(self):
           professor = Professores.query.all()
           response = [{
@@ -150,9 +143,7 @@ class DirectProfessoresPass(Resource):
                     'rg':            dados.rg,
                     'endereco':      dados.endereco,
                     'salario':       f"{dados.salario}",
-                    'materia':       dados.materia,
-                    'curso':         dados.curso,
-                    'id_curso':      dados.id_curso        
+                    'materia':       dados.materia      
           } for dados in professor]
           
           if response == []:
@@ -160,12 +151,11 @@ class DirectProfessoresPass(Resource):
 
           return response
      
+     @auth.login_required
      def post(self):
           
           try:
                dados = request.json
-               curso = Cursos.query.filter_by(nome=dados['curso']).first()
-
                analis1 = ValidaCampo(cpf=dados['cpf'])
                analis2  = ValidaCampo(rg=dados['rg'])
 
@@ -178,10 +168,7 @@ class DirectProfessoresPass(Resource):
                                              rg = dados['rg'],
                                              endereco = dados['endereco'],
                                              salario = dados['salario'],
-                                             materia = dados['materia'],
-                                             curso = curso.nome,
-                                             id_curso  = curso.id,
-                                             #tb_cursos = curso
+                                             materia = dados['materia']
                                         )
                     professor.save()
 
@@ -193,9 +180,7 @@ class DirectProfessoresPass(Resource):
                          'rg':            professor.rg,
                          'endereco':      professor.endereco,
                          'salario':       f"{professor.salario}",
-                         'materia':       professor.materia,
-                         'curso':         professor.curso,
-                         'id_curso':      professor.id_curso        
+                         'materia':       professor.materia      
                     }
 
                elif analis1.analisaCPF() == False:

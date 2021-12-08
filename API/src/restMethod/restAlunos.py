@@ -1,9 +1,9 @@
 import repackage
 repackage.up()
 
-from utils.validadores import ValidaCampo
+from utils.validadoresCampos import ValidaCampo
 from config.tables import Alunos, Cursos
-from config.auth import AuthSystem, AuthUser
+from config.auth import AuthSystem
 from flask_restful import Resource
 from flask import request
 import sqlalchemy
@@ -15,17 +15,13 @@ auth = HTTPBasicAuth()
 def verifySistem(login, password):
     return AuthSystem(login=login, password=password)
 
-auth2 = HTTPBasicAuth()
-@auth2.verify_password
-def verifyUser(login, password):
-    return AuthUser(login=login, password=password)
 
 class DirectAlunos(Resource):
      
-     def get(self, id):
+     def get(self, cpf):
 
           try:
-               aluno = Alunos.query.filter_by(id=id).first()
+               aluno = Alunos.query.filter_by(cpf=str(cpf)).first()
                response = {
                          'id': 		  aluno.id,	
                          'nome':          aluno.nome,
@@ -47,10 +43,10 @@ class DirectAlunos(Resource):
 
           return response
      
-     def put(self, id):
+     def put(self, cpf):
 
           try:
-               aluno = Alunos.query.filter_by(id=id).first()
+               aluno = Alunos.query.filter_by(cpf=str(cpf)).first()
                dados = request.json
 
                analis1 = ValidaCampo(cpf=dados['cpf'])
@@ -69,13 +65,11 @@ class DirectAlunos(Resource):
                     if 'endereco' in dados:
                          aluno.endereco = dados['endereco']
                     
-                    if 'mensalidade' in dados:
-                         aluno.mensalidade = dados['mensalidade']
-                    
                     if 'curso' in dados:
                          curso = Cursos.query.filter_by(nome=dados['curso']).first()
                          aluno.curso = curso.nome
                          aluno.id_curso = curso.id
+                         aluno.mensalidade = curso.mensalidade
 
                     aluno.save()
 
@@ -108,12 +102,18 @@ class DirectAlunos(Resource):
                     'mensagem':"Null"
                }
 
+          except sqlalchemy.exc.IntegrityError:
+               response = {
+                    'status':'Error',
+                    'mensagem':'Aluno já esta registado no sistema!'
+               }
+
           return response
 
-     def delete(self, id):
+     def delete(self, cpf):
           
           try:
-               aluno = Alunos.query.filter_by(id=id).first()
+               aluno = Alunos.query.filter_by(cpf=str(cpf)).first()
                nome = aluno.nome
                aluno.delete()
                response = {
@@ -133,6 +133,7 @@ class DirectAlunos(Resource):
 
 class DirectAlunosPass(Resource):
 
+     @auth.login_required
      def get(self):
           aluno = Alunos.query.all()
           response = [{
@@ -168,7 +169,7 @@ class DirectAlunosPass(Resource):
                                    cpf = dados['cpf'],
                                    rg = dados['rg'],
                                    endereco = dados['endereco'],
-                                   mensalidade = dados['mensalidade'],
+                                   mensalidade = curso.mensalidade,
                                    curso = curso.nome,
                                    id_curso  = curso.id,
                                    #tb_cursos = curso

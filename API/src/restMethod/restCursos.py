@@ -1,8 +1,9 @@
+from re import A
 import repackage
 repackage.up()
 
 from config.tables import Cursos
-from config.auth import AuthSystem, AuthUser
+from config.auth import AuthSystem
 from flask_restful import Resource
 from flask import request
 import sqlalchemy
@@ -13,10 +14,6 @@ auth = HTTPBasicAuth()
 def verifySistem(login, password):
     return AuthSystem(login=login, password=password)
 
-auth2 = HTTPBasicAuth()
-@auth2.verify_password
-def verifyUser(login, password):
-    return AuthUser(login=login, password=password)
 
 class DirectCursos(Resource):
      
@@ -28,7 +25,8 @@ class DirectCursos(Resource):
                     'id':           curso.id,
                     'nome':         curso.nome,
                     'tempo_duracao':curso.tempo_duracao,
-                    'descricao':    curso.descricao
+                    'descricao':    curso.descricao,
+                    'mensalidade':  f'{str(curso.mensalidade)}'
                }
 
           except AttributeError:
@@ -40,6 +38,7 @@ class DirectCursos(Resource):
 
           return response
      
+     @auth.login_required
      def put(self, id):
 
           try:
@@ -51,6 +50,9 @@ class DirectCursos(Resource):
                
                if 'descricao' in dados:
                     curso.descricao = dados['descricao']
+               
+               if 'mensalidade' in dados:
+                    curso.mensalidade = dados['mensalidade']
 
                curso.save()
 
@@ -58,7 +60,8 @@ class DirectCursos(Resource):
                     'id':           curso.id,
                     'nome':         curso.nome,
                     'tempo_duracao':curso.tempo_duracao,
-                    'descricao':    curso.descricao
+                    'descricao':    curso.descricao,
+                    'mensalidade':  f'{str(curso.mensalidade)}'
                }
 
           except TypeError:
@@ -70,6 +73,7 @@ class DirectCursos(Resource):
 
           return response
 
+     @auth.login_required
      def delete(self, id):
           
           try:
@@ -97,22 +101,26 @@ class DirectCursosPass(Resource):
                     'id':           dados.id,
                     'nome':         dados.nome,
                     'tempo_duracao':dados.tempo_duracao,
-                    'descricao':    dados.descricao         
+                    'descricao':    dados.descricao,
+                    'mensalidade':  f'{str(dados.mensalidade)}'        
           } for dados in cursos]
 
           if response == []:
                 response = {"mensagem":"Nenhum registro no momento"}
           
           return response
-     
+
+     @auth.login_required
      def post(self):
           
           try:
 
                dados = request.json
                curso = Cursos(nome = dados['nome'],
-                               tempo_duracao = dados['tempo_duracao'],
-                               descricao = dados['descricao'])
+                              tempo_duracao = dados['tempo_duracao'],
+                              descricao = dados['descricao'],
+                              mensalidade = dados['mensalidade']
+                         )
 
                curso.save()
 
@@ -120,7 +128,8 @@ class DirectCursosPass(Resource):
                     'id':           curso.id,
                     'nome':         curso.nome,
                     'tempo_duracao':curso.tempo_duracao,
-                    'descricao':    curso.descricao
+                    'descricao':    curso.descricao,
+                    'mensalidade':  f'{str(curso.mensalidade)}'
                }
 
           except KeyError:
