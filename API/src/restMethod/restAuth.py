@@ -131,8 +131,14 @@ class DirectAuthPass(Resource):
                existe = Usuario.query.filter_by(tipo_usuario=dados['tipo_usuario']).first()
                tipo_user = 'N'
 
-               if dados['tipo_usuario'] == "A" and existe.tipo_usuario != "A":
+               try:
+                    if dados['tipo_usuario'] == "A" and existe.tipo_usuario != "A":
+                         tipo_user = dados['tipo_usuario']
+               except AttributeError:
                     tipo_user = dados['tipo_usuario']
+
+               if dados['tipo_usuario'] == 'P':
+                    tipo_user = 'P'
 
                user = Usuario(login = dados['login'],
                               senha = (crypMD5(dados['senha']) + 'TFHKKFJSTOJ8F'),

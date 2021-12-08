@@ -11,17 +11,17 @@ from restMethod.restAuth import DirectAuth, DirectAuthPass
 app = Flask(__name__)
 api = Api(app)
 
-api.add_resource(DirectCursos, '/cursos/<int:id>/' )
-api.add_resource(DirectCursosPass, '/cursos/' )
+api.add_resource(DirectCursos, '/v1/cursos/<int:id>/' )
+api.add_resource(DirectCursosPass, '/v1/cursos/' )
 
-api.add_resource(DirectAlunos, '/alunos/<int:id>/' )
-api.add_resource(DirectAlunosPass, '/alunos/' )
+api.add_resource(DirectAlunos, '/v1/alunos/<int:id>/' )
+api.add_resource(DirectAlunosPass, '/v1/alunos/' )
 
-api.add_resource(DirectProfessores, '/profess/<int:id>/' )#DirectAuthPass
-api.add_resource(DirectProfessoresPass, '/profess/' )
+api.add_resource(DirectProfessores, '/v1/profess/<int:id>/' )#DirectAuthPass
+api.add_resource(DirectProfessoresPass, '/v1/profess/' )
 
-api.add_resource(DirectAuth, '/usuarios/<int:id>/' )
-api.add_resource(DirectAuthPass, '/usuarios/' )
+api.add_resource(DirectAuth, '/v1/usuarios/<int:id>/' )
+api.add_resource(DirectAuthPass, '/v1/usuarios/' )
 
 
 if __name__ == '__main__':
