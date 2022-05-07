@@ -29,6 +29,6 @@ api.add_resource(DirectLogin, '/v1/login/<string:email>/<string:senha>/')
 api.add_resource(DirectLoginPass, '/v1/login/')
 
 if __name__ == '__main__':
-     app.run(debug=True)
+     app.run(debug=False, host="0.0.0.0")
 
      
